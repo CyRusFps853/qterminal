@@ -8,7 +8,7 @@
 #include "properties.h"
 #include "termwidget.h"
 
-TerminalConfig::TerminalConfig(const QString & wdir, const QString & shell)
+TerminalConfig::TerminalConfig(const QString & wdir, const QStringList & shell)
 {
     m_workingDirectory = wdir;
     m_shell = shell;
@@ -32,20 +32,28 @@ QString TerminalConfig::getWorkingDirectory()
     return QTerminalApp::Instance()->getWorkingDirectory();
 }
 
-QString TerminalConfig::getShell()
+QStringList TerminalConfig::getShell()
 {
     if (!m_shell.isEmpty())
         return m_shell;
+
+    QString shellString;
     if (!Properties::Instance()->shell.isEmpty())
-        return Properties::Instance()->shell;
-    QByteArray envShell = qgetenv("SHELL");
-    if (envShell.constData() != nullptr)
     {
-        QString shellString = QString::fromLocal8Bit(envShell);
-        if (!shellString.isEmpty())
-            return shellString;
+        shellString = Properties::Instance()->shell;
     }
-    return QString();
+    else
+    {
+        QByteArray envShell = qgetenv("SHELL");
+        if (envShell.constData() != NULL)
+        {
+            shellString = QString::fromLocal8Bit(envShell);
+        }
+    }
+    QStringList ret;
+    if (!shellString.isEmpty())
+        ret << shellString;
+    return ret;
 }
 
 void TerminalConfig::setWorkingDirectory(const QString &val)
@@ -53,7 +61,7 @@ void TerminalConfig::setWorkingDirectory(const QString &val)
     m_workingDirectory = val;
 }
 
-void TerminalConfig::setShell(const QString &val)
+void TerminalConfig::setShell(const QStringList &val)
 {
     m_shell = val;
 }
@@ -98,7 +106,7 @@ TerminalConfig TerminalConfig::fromDbus(const QHash<QString,QVariant> &termArgs)
     if (termArgs.contains(QLatin1String(DBUS_ARG_SHELL))) {
         shell = variantToString(termArgs[QLatin1String(DBUS_ARG_SHELL)], shell);
     }
-    return TerminalConfig(wdir, shell);
+    return TerminalConfig(wdir, QStringList() << shell);
 }
 
 #endif

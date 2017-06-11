@@ -55,16 +55,11 @@ TermWidgetImpl::TermWidgetImpl(TerminalConfig &cfg, QWidget * parent)
 
     setWorkingDirectory(cfg.getWorkingDirectory());
 
-    QString shell = cfg.getShell();
+    QStringList shell = cfg.getShell();
     if (!shell.isEmpty())
     {
         //qDebug() << "Shell program:" << shell;
-#if (QT_VERSION >= QT_VERSION_CHECK(5,15,0))
-        QStringList parts = shell.split(QRegExp(QStringLiteral("\\s+")), Qt::SkipEmptyParts);
-#else
-        QStringList parts = shell.split(QRegExp(QStringLiteral("\\s+")), QString::SkipEmptyParts);
-#endif
-        //qDebug() << parts;
+        QStringList parts = shell;
         setShellProgram(parts.at(0));
         parts.removeAt(0);
         if (parts.count())
